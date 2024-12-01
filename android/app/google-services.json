@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "71215710461",
+    "project_id": "linkhub-pakuan",
+    "storage_bucket": "linkhub-pakuan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71215710461:android:b193e5e899862dbd74fe94",
+        "android_client_info": {
+          "package_name": "com.linkhubpakuan.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCr78_CyFyccVWFzXb5e8XkF3b491Ef0To"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
