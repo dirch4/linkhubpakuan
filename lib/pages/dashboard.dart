@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:linkhubpakuan/pages/add_category.dart';
 import 'package:linkhubpakuan/pages/detail_link.dart';
+import 'package:linkhubpakuan/pages/full_history.dart';
 import 'package:linkhubpakuan/services/firestore.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -14,7 +15,7 @@ class DashboardPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('UnpakLink.'),
         leading: Icon(Icons.menu),
-        actions: [Icon(Icons.search)],
+        //actions: [Icon(Icons.search)],
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -22,15 +23,15 @@ class DashboardPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Ketik judul link',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
+              // TextField(
+              //   decoration: InputDecoration(
+              //     hintText: 'Ketik judul link',
+              //     prefixIcon: Icon(Icons.search),
+              //     border: OutlineInputBorder(
+              //       borderRadius: BorderRadius.circular(8.0),
+              //     ),
+              //   ),
+              // ),
               SizedBox(height: 16.0),
               Text(
                 'Kategori',
@@ -90,10 +91,10 @@ class DashboardPage extends StatelessWidget {
                                     size: 36, color: Colors.black),
                                 onPressed: () {
                                   Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => AddCategoryPage(),
-                                  ),
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => AddCategoryPage(),
+                                    ),
                                   );
                                 },
                               ),
@@ -114,31 +115,18 @@ class DashboardPage extends StatelessWidget {
               ),
               SizedBox(height: 16.0),
               // Placeholder tiles for "Baru Ditambahkan"
-              RecentlyAddedTile(
-                color: Color(0xFFd9998e),
-                title: 'Zoom Teksim P9',
-                date: '2 Desember 2024 - 13.00 WIB',
-                category: 'Zoom Perkuliahan',
-                addedDate: '1 Desember 2024',
+              SizedBox(
+                height: 500.0, // Sesuaikan tinggi
+                child: RecentlyAddedList(limit: 5), // Batasi hanya 5 data
               ),
-              RecentlyAddedTile(
-                color: Color(0xFF55b545),
-                title: 'Pengumpulan Tugas Teksim',
-                date: '10 Desember 2024 - 23.59 WIB',
-                category: 'Gdrive Tugas',
-                addedDate: '29 November 2024',
-              ),
-              RecentlyAddedTile(
-                color: Color(0xFF44253e),
-                title: 'Absen MobPro',
-                date: '4 Desember 2024 - 15.00 WIB',
-                category: 'Absensi',
-                addedDate: '29 November 2024',
-              ),
+
               SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
-                  // Handle open full history
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => FullHistoryPage()),
+                  );
                 },
                 child: Text('Buka Riwayat Lengkap'),
                 style: ElevatedButton.styleFrom(
@@ -175,6 +163,91 @@ class CategoryTile extends StatelessWidget {
     );
   }
 }
+
+class RecentlyAddedList extends StatelessWidget {
+  final int limit;
+
+  RecentlyAddedList({this.limit = 5}); // Default limit 5
+
+  final FirestoreService firestoreService = FirestoreService();
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, dynamic>>(
+      future: firestoreService.getCategories(),
+      builder: (context, categorySnapshot) {
+        if (categorySnapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (categorySnapshot.hasError) {
+          return Center(child: Text('Error: ${categorySnapshot.error}'));
+        }
+
+        final categories = categorySnapshot.data ?? {};
+
+        return StreamBuilder<QuerySnapshot>(
+          stream: firestoreService.getRecentlyAddedLinks(
+              limit: limit > 0 ? limit : null),
+          builder: (context, linkSnapshot) {
+            if (linkSnapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
+
+            if (linkSnapshot.hasError) {
+              return Center(child: Text('Error: ${linkSnapshot.error}'));
+            }
+
+            if (!linkSnapshot.hasData || linkSnapshot.data!.docs.isEmpty) {
+              return Center(child: Text('Tidak ada data.'));
+            }
+
+            return ListView(
+              shrinkWrap: true,
+              physics: limit > 0 ? NeverScrollableScrollPhysics() : null,
+              children: linkSnapshot.data!.docs.map((doc) {
+                var linkData = doc.data() as Map<String, dynamic>;
+
+                // Pastikan categoryId tidak null
+                String categoryId = linkData['categoryId'] ?? 'default';
+                String? colorHex = categories[categoryId]?['color'];
+
+                // Gunakan warna default jika colorHex null
+                Color color = colorHex != null
+                    ? Color(int.parse(colorHex.substring(1, 7), radix: 16) +
+                        0xFF000000)
+                    : Colors.grey;
+
+                // Pastikan properti lainnya tidak null
+                String title = linkData['judul'] ?? 'Judul Tidak Tersedia';
+                String date = (linkData['timestamp'] as Timestamp?)
+                        ?.toDate()
+                        .toString() ??
+                    'Tanggal Tidak Tersedia';
+                String categoryName = categories[categoryId]?['name'] ??
+                    'Kategori Tidak Diketahui';
+                String addedDate = (linkData['timestamp'] as Timestamp?)
+                        ?.toDate()
+                        .toString() ??
+                    'Tanggal Tidak Tersedia';
+
+                return RecentlyAddedTile(
+                  color: color,
+                  title: title,
+                  date: date,
+                  category: categoryName,
+                  addedDate: addedDate,
+                );
+              }).toList(),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+
 
 class RecentlyAddedTile extends StatelessWidget {
   final Color color;

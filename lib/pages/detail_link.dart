@@ -36,8 +36,15 @@ class LinksPage extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              firestoreService.deleteLink(categoryId, docID);
+              firestoreService.deleteLink(docID);
               Navigator.pop(context);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text("Link berhasil dihapus."),
+                  duration: const Duration(seconds: 2),
+                ),
+              );
             },
             child: const Text("Hapus"),
           ),

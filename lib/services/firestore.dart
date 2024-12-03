@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirestoreService {
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
   // mengambil data link dari database
   final CollectionReference links = 
   FirebaseFirestore.instance.collection('links');
@@ -70,29 +71,30 @@ class FirestoreService {
 }
 
   // Menghapus link
-  Future<void> deleteLink(String categoryId, String docId) async {
+  Future<void> deleteLink(String docId) async {
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
     try {
-      await categories.doc(categoryId).collection('links').doc(docId).delete();
+      await firestore.collection('links').doc(docId).delete();
     } catch (e) {
       print("Error deleting link: $e");
     }
   }
 
-  Future<void> addCategories() async {
-  final firestore = FirebaseFirestore.instance;
-  final categories = [
-    {"id": "kuisioner", "name": "Kuisioner"},
-    {"id": "beasiswa", "name": "Beasiswa"},
-    {"id": "lomba", "name": "Lomba"},
-    {"id": "proker", "name": "Proker"},
-  ];
+//   Future<void> addCategories() async {
+//   final firestore = FirebaseFirestore.instance;
+//   final categories = [
+//     {"id": "kuisioner", "name": "Kuisioner"},
+//     {"id": "beasiswa", "name": "Beasiswa"},
+//     {"id": "lomba", "name": "Lomba"},
+//     {"id": "proker", "name": "Proker"},
+//   ];
 
-  for (var category in categories) {
-    await firestore.collection('categories').doc(category['id']).set({
-      'name': category['name'],
-    });
-  }
-}
+//   for (var category in categories) {
+//     await firestore.collection('categories').doc(category['id']).set({
+//       'name': category['name'],
+//     });
+//   }
+// }
   // Tambah kategori baru
   Future<void> addCategory(String id, String name, String color) async {
     try {
@@ -104,5 +106,34 @@ class FirestoreService {
     } catch (e) {
       print("Kesalahan saat menambahkan kategori: $e");
     }
+  }
+
+//   Stream<QuerySnapshot> getRecentlyAddedLinks({int limit = 5}) {
+//   return FirebaseFirestore.instance
+//       .collection('links') // Sesuaikan nama koleksi Firestore
+//       .orderBy('timestamp', descending: true) // Urutkan berdasarkan timestamp
+//       .limit(limit) // Batasi jumlah dokumen
+//       .snapshots();
+// }
+   // Ambil semua kategori sebagai map
+  Future<Map<String, dynamic>> getCategories() async {
+    QuerySnapshot snapshot =
+        await firestore.collection('categories').get();
+
+    // Ubah dokumen menjadi map dengan documentId sebagai key
+    return {for (var doc in snapshot.docs) doc.id: doc.data()};
+  }
+
+  // Ambil data link terbaru
+  Stream<QuerySnapshot> getRecentlyAddedLinks({int? limit}) {
+    var query = firestore
+        .collection('links')
+        .orderBy('timestamp', descending: true);
+
+    if (limit != null && limit > 0) {
+      query = query.limit(limit);
+    }
+
+    return query.snapshots();
   }
 }
