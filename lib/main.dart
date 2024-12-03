@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:linkhubpakuan/firebase_options.dart';
 import 'package:linkhubpakuan/pages/add_category.dart';
+import 'package:linkhubpakuan/pages/dashboard.dart';
 import 'package:linkhubpakuan/pages/home_page.dart';
 
 void main() async {
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: DashboardPage(),
     );
   }
 }

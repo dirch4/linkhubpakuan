@@ -94,10 +94,11 @@ class FirestoreService {
   }
 }
   // Tambah kategori baru
-  Future<void> addCategory(String id, String name) async {
+  Future<void> addCategory(String id, String name, String color) async {
     try {
       await categories.doc(id).set({
         'name': name,
+        'color': color
       });
       print("Kategori berhasil ditambahkan: $name");
     } catch (e) {

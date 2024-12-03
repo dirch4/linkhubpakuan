@@ -36,13 +36,18 @@ class HomePage extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            LinksPage(categoryId: categoryId, title: data['name']),
+                        builder: (context) => LinksPage(
+                            categoryId: categoryId, title: data['name']),
                       ),
                     );
                   },
                   child: Card(
                     elevation: 2,
+                    color: data['color'] != null
+                        ? Color(int.parse(data['color'].substring(1, 7),
+                                radix: 16) +
+                            0xFF000000)
+                        : Colors.grey,
                     child: Center(
                       child: Text(
                         data['name'],
@@ -61,6 +66,7 @@ class HomePage extends StatelessWidget {
           }
         },
       ),
-    );;
+    );
+    ;
   }
 }
