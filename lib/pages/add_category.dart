@@ -9,15 +9,11 @@ class AddCategoryPage extends StatefulWidget {
 
 class _AddCategoryPageState extends State<AddCategoryPage> {
   final FirestoreService firestoreService = FirestoreService();
-
-  final TextEditingController idController = TextEditingController();
-
   final TextEditingController nameController = TextEditingController();
 
-  Color selectedColor = Colors.blue; 
- // Default warna
-  String selectedHexColor = '#0000FF'; 
- // Default Hexa warna
+  Color selectedColor = Colors.blue; // Default warna
+  String selectedHexColor = '#0000FF'; // Default Hexa warna
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,10 +22,6 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: idController,
-              decoration: const InputDecoration(labelText: "ID Kategori"),
-            ),
             TextField(
               controller: nameController,
               decoration: const InputDecoration(labelText: "Nama Kategori"),
@@ -52,7 +44,8 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
                               onColorChanged: (color) {
                                 setState(() {
                                   selectedColor = color;
-                                  selectedHexColor = '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
+                                  selectedHexColor =
+                                      '#${color.value.toRadixString(16).substring(2).toUpperCase()}';
                                 });
                               },
                             ),
@@ -86,19 +79,21 @@ class _AddCategoryPageState extends State<AddCategoryPage> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                final id = idController.text.trim();
                 final name = nameController.text.trim();
 
-                if (id.isNotEmpty && name.isNotEmpty) {
+                if (name.isNotEmpty) {
+                  // Buat ID otomatis dari nama kategori
+                  final id = name.replaceAll(' ', '').toLowerCase();
+
                   firestoreService.addCategory(id, name, selectedHexColor);
-                  idController.clear();
+
                   nameController.clear();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text("Kategori berhasil ditambahkan")),
                   );
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("ID dan Nama tidak boleh kosong")),
+                    const SnackBar(content: Text("Nama Kategori tidak boleh kosong")),
                   );
                 }
               },

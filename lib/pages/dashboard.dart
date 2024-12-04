@@ -4,6 +4,7 @@ import 'package:linkhubpakuan/pages/add_category.dart';
 import 'package:linkhubpakuan/pages/detail_link.dart';
 import 'package:linkhubpakuan/pages/full_history.dart';
 import 'package:linkhubpakuan/services/firestore.dart';
+import 'package:linkhubpakuan/widgets/sidebar.dart';
 
 class DashboardPage extends StatelessWidget {
   final FirestoreService firestoreService = FirestoreService();
@@ -14,9 +15,14 @@ class DashboardPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('UnpakLink.'),
-        leading: Icon(Icons.menu),
+        leading: Builder(
+            builder: (context) =>
+                IconButton(onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                }, icon: Icon(Icons.menu))),
         //actions: [Icon(Icons.search)],
       ),
+      drawer: Sidebar(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -246,8 +252,6 @@ class RecentlyAddedList extends StatelessWidget {
     );
   }
 }
-
-
 
 class RecentlyAddedTile extends StatelessWidget {
   final Color color;

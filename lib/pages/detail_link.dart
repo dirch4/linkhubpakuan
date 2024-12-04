@@ -4,17 +4,23 @@ import 'package:linkhubpakuan/pages/add_link.dart';
 import 'package:linkhubpakuan/services/firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class LinksPage extends StatelessWidget {
+class LinksPage extends StatefulWidget {
   final String categoryId;
   final String title;
-  final FirestoreService firestoreService = FirestoreService();
 
   LinksPage({required this.categoryId, required this.title});
+
+  @override
+  State<LinksPage> createState() => _LinksPageState();
+}
+
+class _LinksPageState extends State<LinksPage> {
+  final FirestoreService firestoreService = FirestoreService();
 
   Future<void> openLink(BuildContext context, String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Gagal membuka link: $url")),
@@ -115,7 +121,7 @@ class LinksPage extends StatelessWidget {
                       setState(() => isLoading = true);
 
                       try {
-                        await firestoreService.addLink(judul, link, categoryId);
+                        await firestoreService.addLink(judul, link, widget.categoryId);
                         Navigator.of(context).pop();
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -147,9 +153,9 @@ class LinksPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
+      appBar: AppBar(title: Text(widget.title)),
       body: StreamBuilder<QuerySnapshot>(
-        stream: firestoreService.getLinksByCategory(categoryId),
+        stream: firestoreService.getLinksByCategory(widget.categoryId),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -193,7 +199,7 @@ class LinksPage extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddLinkPage(categoryId: categoryId),
+              builder: (context) => AddLinkPage(categoryId: widget.categoryId),
             ),
           );
         },
